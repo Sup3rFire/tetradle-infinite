@@ -12,3 +12,6 @@ if (usersDefault) usersDefault = JSON.parse(usersDefault);
 
 export const current = writable(currentDefault);
 export const users = writable(usersDefault);
+
+export const guessPlayer1 = writable("12500");
+export const guessPlayer2 = writable("12500");

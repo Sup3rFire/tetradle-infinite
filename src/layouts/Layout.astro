@@ -17,9 +17,13 @@ const { title } = Astro.props;
         <meta name="viewport" content="width=device-width" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
+        <meta
+            name="description"
+            content="Guess the TR of two players from a random replay in TETR.IO!"
+        />
         <script
             defer
-            data-domain="randomtl.superfi.re"
+            data-domain="tetradle.superfi.re"
             src="https://rumia.superfi.re/js/script.js"
         ></script>
     </head>
@@ -99,7 +103,8 @@ const { title } = Astro.props;
         margin: 0;
         margin-bottom: 0.7rem;
     }
-    a {
+    a,
+    .link {
         font-weight: 700;
         color: var(--light-3);
         text-decoration: none;
