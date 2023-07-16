@@ -4,7 +4,14 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Tetradle Infinite">
-    <Game client:only />
+    <div class="container">
+        <Game client:only />
+    </div>
 </Layout>
 
-<style></style>
+<style>
+    .container {
+        margin: auto;
+        max-width: 1200px;
+    }
+</style>
