@@ -15,3 +15,13 @@ export const users = writable(usersDefault);
 
 export const guessPlayer1 = writable("12500");
 export const guessPlayer2 = writable("12500");
+
+let settingsLS = localStorage.getItem("settings");
+const defaultSettings = {
+    minTR: 0,
+    maxTR: 25000,
+};
+export const settings = writable<typeof defaultSettings>({
+    ...defaultSettings,
+    ...(settingsLS ? JSON.parse(settingsLS) : {}),
+});

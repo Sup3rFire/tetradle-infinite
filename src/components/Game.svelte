@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { current, guessPlayer1, guessPlayer2, users } from "./stores";
+    import { current, guessPlayer1, guessPlayer2, settings, users } from "./stores";
     import { censor, getCorrespondingEmoji } from "../lib/utils";
     import type { userInfosType } from "../lib/utils";
     import Player from "./Player.svelte";
@@ -31,9 +31,12 @@
                 current.set(
                     getRandomValue(
                         await getReplayIds(
-                            await fetch(`/randomuser/${Math.random() * 25000}`).then(
-                                (res) => res.text()
-                            )
+                            await fetch(
+                                `/randomuser/${
+                                    $settings.minTR +
+                                    Math.random() * ($settings.maxTR - $settings.minTR)
+                                }`
+                            ).then((res) => res.text())
                         )
                     )
                 );
@@ -45,6 +48,7 @@
     let usersLSRaw = localStorage.getItem("users");
     let usersVal: userInfosType[] | null = usersLSRaw ? JSON.parse(usersLSRaw) : null;
     async function load() {
+        loaded = false;
         const req = await fetch(`/replay/${$current}`);
         if (!req.ok) throw new Error("couldn't get replay");
         data = await req.json();
@@ -85,7 +89,6 @@
         localStorage.setItem("guess", `${$guessPlayer1},${$guessPlayer2}`);
     }
 
-    let instructionsOpen = false;
     let shareText: string | undefined;
     function generateShareText() {
         if (shareText) return shareText;
@@ -104,6 +107,33 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
         )}`;
         return shareText;
     }
+
+    let maxTR = $settings.maxTR.toString();
+    let minTR = $settings.minTR.toString();
+    function saveSettings() {
+        if (+maxTR > 25000) {
+            maxTR = "25000";
+        }
+        if (+minTR > 25000) {
+            minTR = "25000";
+        }
+        if (+maxTR < 0) {
+            maxTR = "0";
+        }
+        if (+minTR < 0) {
+            minTR = "0";
+        }
+        if (+maxTR < +minTR) {
+            minTR = maxTR;
+        }
+        minTR = Math.round(+minTR).toString();
+        maxTR = Math.round(+maxTR).toString();
+        $settings.maxTR = +maxTR;
+        $settings.minTR = +minTR;
+        localStorage.setItem("settings", JSON.stringify($settings));
+    }
+    let instructionsOpen = false;
+    let settingsOpen = false;
 </script>
 
 <h1>Tetradle Infinite</h1>
@@ -159,6 +189,47 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
             </div>
         </div>
     {/if}
+    {#if settingsOpen}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="modal">
+            <div class="card" style="width: 700px;">
+                <h2 style="text-align: center;">Settings</h2>
+                <div class="inputs">
+                    <h3>Game Settings</h3>
+                    <div class="input-group">
+                        <label>Min TR</label>
+                        <input
+                            type="number"
+                            bind:value={minTR}
+                            min="0"
+                            max="25000"
+                            step="1"
+                        />
+                    </div>
+                    <div class="input-group">
+                        <label>Max TR</label>
+                        <input
+                            type="number"
+                            bind:value={maxTR}
+                            on:input={(e) => {
+                                console.log(e);
+                            }}
+                            min="0"
+                            max="25000"
+                            step="1"
+                        />
+                    </div>
+                </div>
+                <button
+                    class="button"
+                    on:click={() => {
+                        saveSettings();
+                        settingsOpen = false;
+                    }}>Save and Close</button
+                >
+            </div>
+        </div>
+    {/if}
     <p class="id">#{$current}</p>
     <div class="card">
         <p>
@@ -180,9 +251,13 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
                     current.set(
                         getRandomValue(
                             await getReplayIds(
-                                await fetch(`/randomuser/${Math.random() * 25000}`).then(
-                                    (res) => res.text()
-                                )
+                                await fetch(
+                                    `/randomuser/${
+                                        $settings.minTR +
+                                        Math.random() *
+                                            ($settings.maxTR - $settings.minTR)
+                                    }`
+                                ).then((res) => res.text())
                             )
                         )
                     );
@@ -192,6 +267,7 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
                 }
             }}>New Game</button
         >
+        <button class="button" on:click={() => (settingsOpen = true)}>Settings</button>
         <button class="button" on:click={() => (instructionsOpen = true)}
             >Instructions</button
         >
@@ -291,6 +367,9 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
         height: 100%;
         top: 0;
         left: 0;
+        /* color: #eee; */
+    }
+    #loading {
         color: #eee;
     }
     #loading {
@@ -324,9 +403,28 @@ Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
     h1 {
         text-align: center;
     }
+    h3 {
+        margin: 0.5rem 0;
+    }
+    .inputs {
+        margin: 1rem 0;
+    }
     .input-group {
-        font-size: 0.9rem;
-        margin: 0.8rem 0;
+        font-size: 1rem;
+        margin: 0.4rem 0;
+    }
+    input {
+        width: 5rem;
+        padding: 0.2rem 0.4rem;
+        margin-left: 0.2rem;
+        font-size: inherit;
+        font-family: inherit;
+        outline: none;
+        background: var(--dark-3);
+        color: inherit;
+        border-radius: 2px;
+        border: none;
+        box-shadow: 0 1px 2px #0000001c;
     }
     .player {
         position: relative;

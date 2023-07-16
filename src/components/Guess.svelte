@@ -22,7 +22,16 @@
             >
         </h1>
         <h2>Actual TR</h2>
-        <div class="display">{Math.round(user.league.rating)}</div>
+        <div class="flex">
+            <div class="display">
+                {Math.round(user.league.rating)}
+            </div>
+            <img
+                class="rank"
+                src={`https://tetr.io/res/league-ranks/${user.league.rank.toLowerCase()}.png`}
+                alt="({user.league.rank})"
+            />
+        </div>
         <h2>Your Guess</h2>
         <div class="flex">
             <div class="display">{$val}</div>
@@ -72,6 +81,13 @@
     .🟦 {
         --color: rgb(60, 248, 255);
     }
+    .rank {
+        height: 2rem;
+        background: var(--dark);
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        margin-top: 0.1rem;
+    }
     .flex .display {
         margin-bottom: 0;
     }
@@ -86,7 +102,7 @@
         background: var(--dark);
         padding: 0.22rem 0.5rem;
         padding-bottom: 0.38rem;
-        border-radius: 8px;
+        border-radius: 4px;
         margin-top: 0.2rem;
     }
     h1 {
