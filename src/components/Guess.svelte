@@ -1,25 +1,105 @@
 <script lang="ts">
     import type { Writable } from "svelte/store";
+    import { getCorrespondingEmoji, type userInfosType } from "../lib/utils";
 
     export let val: Writable<string>;
     export let pnum: string;
+    export let guessed: boolean;
+    export let user: userInfosType;
+
+    $: difference = +$val - Math.round(user.league.rating);
 </script>
 
-<div class="container">
-    <h2>P{pnum}</h2>
-    <div class="display">{$val}</div>
-    <input type="range" class="slider" min="0" max="25000" bind:value={$val} />
-    <input
-        type="number"
-        class="numinput"
-        bind:value={$val}
-        min="0"
-        max="25000"
-        step="1"
-    />
+<div class={`container p${pnum}`}>
+    {#if guessed}
+        <h2>Player</h2>
+        <h1>
+            <a
+                class="link"
+                href="https://ch.tetr.io/u/{user._id}"
+                rel="noopener noreferrer"
+                target="_blank">{user.username}</a
+            >
+        </h1>
+        <h2>Actual TR</h2>
+        <div class="display">{Math.round(user.league.rating)}</div>
+        <h2>Your Guess</h2>
+        <div class="flex">
+            <div class="display">{$val}</div>
+            <div
+                class={`difference ${getCorrespondingEmoji(
+                    difference,
+                    user.league.rating
+                )}`}
+            >
+                ({difference >= 0 ? "+" + difference : difference})
+            </div>
+        </div>
+    {:else}
+        <h2>P{pnum}</h2>
+        <div class="display">{$val}</div>
+        <input type="range" class="slider" min="0" max="25000" bind:value={$val} />
+        <input
+            type="number"
+            class="numinput"
+            bind:value={$val}
+            min="0"
+            max="25000"
+            step="1"
+        />
+    {/if}
 </div>
 
 <style>
+    .p1 {
+        --dark: #183c6b;
+    }
+    .p2 {
+        --dark: #691616;
+    }
+    .🟥 {
+        --color: rgb(255, 60, 60);
+    }
+
+    .🟨 {
+        --color: #fec01f;
+    }
+
+    .🟩 {
+        --color: rgb(60, 255, 60);
+    }
+
+    .🟦 {
+        --color: rgb(60, 248, 255);
+    }
+    .flex .display {
+        margin-bottom: 0;
+    }
+    .flex {
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .difference {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color);
+        background: var(--dark);
+        padding: 0.22rem 0.5rem;
+        padding-bottom: 0.38rem;
+        border-radius: 8px;
+        margin-top: 0.2rem;
+    }
+    h1 {
+        font-size: 2rem;
+        margin-top: 0;
+        padding: 0;
+        margin-bottom: 1rem;
+        color: #fff;
+    }
+    .link {
+        color: #fff;
+        text-decoration: underline;
+    }
     h2 {
         color: #c7c7c7;
         font-size: 1.2rem;

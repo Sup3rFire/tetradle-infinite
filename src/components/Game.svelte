@@ -1,6 +1,7 @@
 <script lang="ts">
     import { current, guessPlayer1, guessPlayer2, users } from "./stores";
-    import { censor } from "../lib/utils";
+    import { censor, getCorrespondingEmoji } from "../lib/utils";
+    import type { userInfosType } from "../lib/utils";
     import Player from "./Player.svelte";
     import { onMount } from "svelte";
     import Guess from "./Guess.svelte";
@@ -15,7 +16,13 @@
     }
 
     let loaded = !!($current && $users);
-    let guessed = !!localStorage.getItem("guessed");
+    const rawAns = localStorage.getItem("guess");
+    let guessed = !!rawAns;
+    if (rawAns) {
+        let answers = rawAns.split(",");
+        guessPlayer1.set(answers[0]);
+        guessPlayer2.set(answers[1]);
+    }
 
     let data: any;
     onMount(async () => {
@@ -35,14 +42,20 @@
         }
     });
 
+    let usersLSRaw = localStorage.getItem("users");
+    let usersVal: userInfosType[] | null = usersLSRaw ? JSON.parse(usersLSRaw) : null;
     async function load() {
         const req = await fetch(`/replay/${$current}`);
         if (!req.ok) throw new Error("couldn't get replay");
         data = await req.json();
-        const usersVal = data.endcontext.map((x: { user: any }) => x.user);
+        usersVal = await Promise.all(
+            data.endcontext.map((x: { user: any }) =>
+                fetch(`/users/${x.user._id}`).then((res) => res.json())
+            )
+        );
         localStorage.setItem("current", $current as string);
         localStorage.setItem("users", JSON.stringify(usersVal));
-        localStorage.removeItem("guessed");
+        localStorage.removeItem("guess");
         guessed = false;
         loaded = true;
     }
@@ -69,10 +82,28 @@
 
     function guess() {
         guessed = true;
-        console.log("d");
+        localStorage.setItem("guess", `${$guessPlayer1},${$guessPlayer2}`);
     }
 
     let instructionsOpen = false;
+    let shareText: string | undefined;
+    function generateShareText() {
+        if (shareText) return shareText;
+        if (!usersVal) return "";
+        let diff1 = +$guessPlayer1 - Math.round(usersVal[0].league.rating);
+        let diff2 = +$guessPlayer2 - Math.round(usersVal[1].league.rating);
+        shareText = `Tetradle Infinite
+https://tetradle.superfi.re/#${$current}
+Player 1: ${diff1 >= 0 ? "+" : ""}${diff1} ${getCorrespondingEmoji(
+            diff1,
+            usersVal[0].league.rating
+        )}
+Player 2: ${diff2 >= 0 ? "+" : ""}${diff2} ${getCorrespondingEmoji(
+            diff2,
+            usersVal[1].league.rating
+        )}`;
+        return shareText;
+    }
 </script>
 
 <h1>Tetradle Infinite</h1>
@@ -83,6 +114,7 @@
         <div class="card">
             <h2>Tetradle Game Link Detected</h2>
             <button
+                class="button"
                 on:click={() => {
                     //@ts-ignore
                     window.location.hash = $current;
@@ -90,6 +122,7 @@
                 }}>Resume Previous Tetradle</button
             >
             <button
+                class="button"
                 on:click={async () => {
                     current.set(window.location.hash.toLowerCase().slice(1));
                     await load().catch((e) => {
@@ -129,15 +162,17 @@
     <p class="id">#{$current}</p>
     <div class="card">
         <p>
-            Original <a href="https://tetradle.xyz/">tetradle</a> was made by 25pi25,
-            infinite version made by <a href="https://superfi.re">SuperFire</a>
+            Original <a class="link" href="https://tetradle.xyz/">tetradle</a> was made by
+            25pi25, infinite version made by
+            <a class="link" href="https://superfi.re">SuperFire</a>
             <span class="mini"
                 >(<span class="link">remilia.tetris</span> on discord). Like the original,
                 all replays are trimmed to FT3 and the players and their stats are hidden.</span
             >
         </p>
-        <button on:click={downloadReplay} class="m0l">Download Replay</button>
+        <button class="button m0l" on:click={downloadReplay}>Download Replay</button>
         <button
+            class={`button ${guessed ? "accent" : ""}`}
             on:click={async () => {
                 if (confirm("Are you sure you want to start a new game?")) {
                     loaded = false;
@@ -157,19 +192,48 @@
                 }
             }}>New Game</button
         >
-        <button on:click={() => (instructionsOpen = true)}>Instructions</button>
+        <button class="button" on:click={() => (instructionsOpen = true)}
+            >Instructions</button
+        >
     </div>
 
     <div class="guesses">
-        <div class="card m0r" style="--color: #266dcd">
-            <Guess val={guessPlayer1} pnum="1" />
-        </div>
-        <div class="card m0l" style="--color: #cd2626">
-            <Guess val={guessPlayer2} pnum="2" />
-        </div>
+        {#if usersVal}
+            <div class="card m0r" style="--color: #266dcd">
+                <Guess val={guessPlayer1} pnum="1" {guessed} user={usersVal[0]} />
+            </div>
+            <div class="card m0l" style="--color: #cd2626">
+                <Guess val={guessPlayer2} pnum="2" {guessed} user={usersVal[1]} />
+            </div>
+        {/if}
     </div>
-    {#if !guessed}
-        <button class="guess" on:click={guess}>Guess</button>
+    {#if guessed}
+        <div class="card">
+            <p>
+                Click a button below to share your game and your results (without spoiling
+                the answers)!
+            </p>
+            <a
+                class="button"
+                rel="noopener noreferrer"
+                target="_blank"
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    generateShareText()
+                )}`}>Share To Twitter</a
+            >
+
+            <button
+                class="button"
+                on:click={() => {
+                    navigator.clipboard
+                        // @ts-ignore
+                        .writeText(generateShareText())
+                        .then(() => alert("Results Copied!"));
+                }}>Copy Results</button
+            >
+        </div>
+    {:else}
+        <button class="guess button" on:click={guess}>Click Here to Guess</button>
     {/if}
 {/if}
 
@@ -227,6 +291,7 @@
         height: 100%;
         top: 0;
         left: 0;
+        color: #eee;
     }
     #loading {
         font-weight: 700;
@@ -243,7 +308,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: #00000085;
+        background: #000000c5;
     }
     @keyframes pulse {
         0% {
