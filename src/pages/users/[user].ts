@@ -15,7 +15,7 @@ const cache: Map<string, CacheData> = new Map();
 
 function checkCache(key: string) {
     const cacheData = cache.get(key);
-    console.log("x", cacheData);
+    // console.log("x", cacheData);
     if (!!cacheData && new Date().getTime() < cacheData.cache.cached_until)
         return cacheData.data;
 }
