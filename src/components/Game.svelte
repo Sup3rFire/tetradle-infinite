@@ -53,8 +53,8 @@
         if (!req.ok) throw new Error("couldn't get replay");
         data = await req.json();
         usersVal = await Promise.all(
-            data.endcontext.map((x: { user: any }) =>
-                fetch(`/users/${x.user._id}`).then((res) => res.json())
+            data.endcontext.map((x: any) =>
+                fetch(`/users/${x.id}`).then((res) => res.json())
             )
         );
         localStorage.setItem("current", $current as string);

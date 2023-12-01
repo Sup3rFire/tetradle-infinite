@@ -132,7 +132,7 @@ export function censor(dataD: any) {
     let data = JSON.parse(JSON.stringify(dataD));
     data._id = "";
     data.shortid = "";
-    const users = data.endcontext.map((x: { user: any }) => x.user);
+    const users = data.endcontext;
 
     const wins = [0, 0];
 
@@ -176,8 +176,8 @@ export function censor(dataD: any) {
     });
 
     data = JSON.stringify(data);
-    data = data.replaceAll(users[0]._id, "5e81a6dcd0c40c6c8067278b");
-    data = data.replaceAll(users[1]._id, "5f193de9272cc46c0ff85110");
+    data = data.replaceAll(users[0].id, "5e81a6dcd0c40c6c8067278b");
+    data = data.replaceAll(users[1].id, "5f193de9272cc46c0ff85110");
     data = data.replaceAll(`"${users[0].username}"`, '"P1"');
     data = data.replaceAll(`"${users[1].username}"`, '"P2"');
 
