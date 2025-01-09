@@ -28,3 +28,15 @@ export async function randomGame(settings: typeof defaultSettings) {
     return await loadGame(gameId);
   }
 }
+
+// copied from https://github.com/25Pi25/tetradle/blob/main/src/components/Modal.tsx
+export function getMinimumCorrectRating(tr: number, mult = 1) {
+    return 1.5 * mult * (-0.000008707 * Math.pow(tr, 2) + 0.178725036 * tr + 976.46);
+}
+export function getCorrespondingEmoji(ratingDifference: number, realRating: number) {
+    if (ratingDifference == 0) return "🟦";
+    if (Math.abs(ratingDifference) < getMinimumCorrectRating(realRating)) return "🟩";
+    if (Math.abs(ratingDifference) < getMinimumCorrectRating(realRating, 1.25))
+        return "🟨";
+    return "🟥";
+}
