@@ -33,5 +33,29 @@ export function generateQuestion(game: GamesResponse['game']): Question {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function removeReplayData(data: any) {
-	return data;
+	const ttrmData = data;
+
+	ttrmData.replay.leaderboard[0].stats.apm = 0;
+	ttrmData.replay.leaderboard[0].stats.pps = 0;
+	ttrmData.replay.leaderboard[0].stats.vsscore = 0;
+	ttrmData.replay.leaderboard[1].stats.apm = 0;
+	ttrmData.replay.leaderboard[1].stats.pps = 0;
+	ttrmData.replay.leaderboard[1].stats.vsscore = 0;
+	ttrmData.replay.leaderboard[0].wins = 0;
+	ttrmData.replay.leaderboard[1].wins = 0;
+	while (ttrmData.replay.rounds.length > 3) {
+		ttrmData.replay.rounds.pop();
+	}
+	for (let roundnum = 0; roundnum < 3; roundnum++) {
+		ttrmData.replay.rounds[roundnum][0].lifetime = 0;
+		ttrmData.replay.rounds[roundnum][0].stats.pps = 0;
+		ttrmData.replay.rounds[roundnum][0].stats.apm = 0;
+		ttrmData.replay.rounds[roundnum][0].stats.vsscore = 0;
+		ttrmData.replay.rounds[roundnum][1].lifetime = 0;
+		ttrmData.replay.rounds[roundnum][1].stats.pps = 0;
+		ttrmData.replay.rounds[roundnum][1].stats.apm = 0;
+		ttrmData.replay.rounds[roundnum][1].stats.vsscore = 0;
+	}
+
+	return ttrmData
 }

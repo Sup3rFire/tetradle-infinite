@@ -49,8 +49,9 @@ export async function fetchUser(tr: number) {
 		}
 	).then((res) => res.json())) as UserLeaderboardResponse;
 	if (!res.success) throw new Error(JSON.stringify(res.error));
-	if (res.data.entries.length == 0) throw new Error('No entries found');
-	return res.data.entries[0]._id;
+	const entries = res.data.entries.filter((x) => !x.league.decaying || (x.supporter && x.league.rd <= 80))
+	if (entries.length == 0) throw new Error('No entries found');
+	return entries[0]._id;
 }
 
 export async function randomGame(user: string, limit = 10) {

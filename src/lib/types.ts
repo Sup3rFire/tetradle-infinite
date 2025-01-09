@@ -49,8 +49,9 @@ export interface UserLeaderboardEntry {
 	role: string;
 	xp: number;
 	league: LeagueData;
+	supporter: boolean;
 	country: string;
-	ts: Date;
+	ts: string;
 	gamesplayed: number;
 	gameswon: number;
 	gametime: number;
