@@ -21,11 +21,11 @@ export class Cache<T extends Record<string, unknown>> {
 	 * Cache setter
 	 * @param k Key for cached value
 	 * @param v Cached value
-	 * @param expire How many milliseconds until it expires
+	 * @param expire Expiry date
 	 */
-	public set<U extends keyof T>(k: U, v: T[U], expire: number = 60000) {
+	public set<U extends keyof T>(k: U, v: T[U], expire: number = Date.now() + 60000) {
 		this.cache.set(k, {
-			expire: Date.now() + expire,
+			expire,
 			value: v
 		});
 
