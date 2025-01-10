@@ -46,7 +46,7 @@ export function removeReplayData(data: any) {
 	while (ttrmData.replay.rounds.length > 3) {
 		ttrmData.replay.rounds.pop();
 	}
-	for (let roundnum = 0; roundnum < 3; roundnum++) {
+	for (let roundnum = 0; roundnum < ttrmData.replay.rounds.length; roundnum++) {
 		ttrmData.replay.rounds[roundnum][0].lifetime = 0;
 		ttrmData.replay.rounds[roundnum][0].stats.pps = 0;
 		ttrmData.replay.rounds[roundnum][0].stats.apm = 0;
