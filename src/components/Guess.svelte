@@ -126,6 +126,7 @@
 	}
 	input {
 		margin: 0;
+		color: var(--dark-1);
 	}
 	.numinput::-webkit-outer-spin-button,
 	.numinput::-webkit-inner-spin-button {
