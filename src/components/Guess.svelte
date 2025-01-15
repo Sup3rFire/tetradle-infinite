@@ -14,6 +14,11 @@
 	} = $props();
 
 	let difference = $derived(+val - Math.round(user.tr));
+
+	$effect(() => {
+		if (+val > 25000) val = '25000';
+		if (+val < 0) val = '0';
+	});
 </script>
 
 <div class={`container p${pnum}`}>
